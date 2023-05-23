@@ -4,15 +4,20 @@ url=$1
 
 dirb_recursive() {
     while true; do
-        output=$(dirb "$url" /usr/share/dirb/wordlists/common.txt -r)
+        output=$(dirb "$url" /usr/share/dirb/wordlists/common.txt -X .html -r)
 
         # Vérifier si des dossiers ont été trouvés dans la sortie de Dirb
-        if grep -q "/T/" <<< "$output"; then
-            # Effectuer une action supplémentaire lorsque le dossier /T/ est trouvé
-            echo "Le dossier /T/ a été trouvé ! Faire quelque chose..."
+        if grep -q "DIRECTORY: " <<< "$output"; then
+            # Extraire les noms de dossiers trouvés
+            folders=$(grep "DIRECTORY: " <<< "$output" | cut -d ' ' -f 2-)
 
-            # Extraire le chemin du dossier /T/ pour la prochaine itération
-            url="$url/T/"
+            # Parcourir chaque dossier trouvé
+            while IFS= read -r folder; do
+                # Effectuer une action supplémentaire avec chaque dossier
+                echo "Dossier trouvé : $folder"
+                # Récursion pour explorer le sous-dossier
+                dirb_recursive "$url/$folder"
+            done <<< "$folders"
         else
             # Aucun dossier trouvé, sortir de la boucle
             break
@@ -26,5 +31,7 @@ if [ -z "$url" ]; then
     exit 1
 fi
 
-# Exécuter la fonction dirb_recursive
-dirb_recursive
+# Exécuter la fonction dirb_recursive et rediriger la sortie vers le fichier output.txt
+dirb_recursive > output.txt
+
+echo "Exploration terminée. Les résultats ont été enregistrés dans output.txt."
