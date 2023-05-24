@@ -6,7 +6,6 @@ wordlist="/usr/share/dirb/wordlists/common.txt"
 # Fonction récursive pour explorer les dossiers
 explore_folders() {
   local url="$1"
-  local current_path="$2"
 
   # Exécuter dirb pour le dossier actuel
   output=$(dirb "$url" "$wordlist")
@@ -19,15 +18,12 @@ explore_folders() {
     # Construire le nouvel URL pour le dossier
     new_url="$url$folder/"
 
-    # Construire le nouveau chemin de fichier pour le dossier
-    new_path="$current_path/$folder"
-
     # Afficher le contenu du dossier
     echo "Contenu du dossier $new_url :"
-    cat "$new_path"
+    cat "$new_url"
 
     # Explorer récursivement les sous-dossiers
-    explore_folders "$new_url" "$new_path"
+    explore_folders "$new_url"
   done
 }
 
@@ -38,16 +34,15 @@ output=$(dirb "$base_url" "$wordlist")
 folder=$(echo "$output" | grep -oP '(?<=\+ )[^ ]+(?=/)' | tail -1)
 
 if [ -n "$folder" ]; then
-  # Construire l'URL et le chemin de fichier pour le dossier initial
-  url="$base_url/"
-  path="."
+  # Construire l'URL pour le dossier initial
+  url="$base_url/$folder/"
 
   # Afficher le contenu du dossier initial
   echo "Contenu du dossier $url :"
-  cat "$path"
+  cat "$url"
 
   # Explorer récursivement les sous-dossiers
-  explore_folders "$url" "$path"
+  explore_folders "$url"
 else
   # Aucun dossier trouvé, afficher le dernier URL
   last_url=$(echo "$output" | grep -oP '(?<=+ )[^ ]+' | tail -1)
