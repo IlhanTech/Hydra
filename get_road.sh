@@ -20,7 +20,7 @@ explore_folders() {
 
     # Afficher le contenu du dossier
     echo "Contenu du dossier $new_url :"
-    cat "$new_url"
+    curl -s "$new_url"  # Utiliser curl pour afficher le contenu du dossier
 
     # Explorer récursivement les sous-dossiers
     explore_folders "$new_url"
@@ -30,24 +30,22 @@ explore_folders() {
 # Exécuter la commande dirb initiale
 output=$(dirb "$base_url" "$wordlist")
 
-# Extraire les dossiers trouvés par dirb
-folders=$(echo "$output" | grep -oP '(?<=\+ )[^ ]+(?=/)')
+# Extraire le dernier dossier trouvé par dirb
+folder=$(echo "$output" | grep -oP '(?<=\+ )[^ ]+(?=/)' | tail -1)
 
-if [ -n "$folders" ]; then
-  # Parcourir les dossiers et explorer récursivement
-  for folder in $folders; do
-    # Construire l'URL pour le dossier initial
-    url="$base_url/$folder/"
+if [ -n "$folder" ]; then
+  # Construire l'URL pour le dossier initial
+  url="$base_url/$folder/"
 
-    # Afficher le contenu du dossier initial
-    echo "Contenu du dossier $url :"
-    cat "$url"
+  # Afficher le contenu du dossier initial
+  echo "Contenu du dossier $url :"
+  curl -s "$url"  # Utiliser curl pour afficher le contenu du dossier
 
-    # Explorer récursivement les sous-dossiers
-    explore_folders "$url"
-  done
+  # Explorer récursivement les sous-dossiers
+  explore_folders "$url"
 else
   # Aucun dossier trouvé, afficher le dernier URL
   last_url=$(echo "$output" | grep -oP '(?<=+ )[^ ]+' | tail -1)
   echo "Dernier URL : $last_url"
 fi
+
