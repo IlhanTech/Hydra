@@ -3,11 +3,6 @@
 base_url="http://10.10.166.131"
 wordlist="/usr/share/dirb/wordlists/common.txt"
 
-#!/bin/bash
-
-base_url="http://ip_adresse/"
-wordlist="common.txt"
-
 # Exécuter la commande dirb
 output=$(dirb "$base_url" -w "$wordlist")
 
@@ -23,9 +18,8 @@ while true; do
     output=$(dirb "$url" -w "$wordlist")
   else
     # Aucun dossier trouvé, afficher le dernier URL
-    last_url=$(echo "$output" | grep -oP '(?<=\+ )[^ ]+(?=/)' | tail -1)
+    last_url=$(echo "$output" | grep -oP '(?<=+ )[^ ]+' | tail -1)
     echo "Dernier URL : $last_url"
     break
   fi
 done
-
