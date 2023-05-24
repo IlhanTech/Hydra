@@ -17,7 +17,7 @@ explore_folders() {
   # Parcourir les dossiers et explorer récursivement
   for folder in $folders; do
     # Construire le nouvel URL pour le dossier
-    new_url="$url/$folder/"
+    new_url="$url$folder/"
 
     # Construire le nouveau chemin de fichier pour le dossier
     new_path="$current_path/$folder"
@@ -39,8 +39,8 @@ folder=$(echo "$output" | grep -oP '(?<=\+ )[^ ]+(?=/)' | tail -1)
 
 if [ -n "$folder" ]; then
   # Construire l'URL et le chemin de fichier pour le dossier initial
-  url="$base_url/$folder/"
-  path="$folder"
+  url="$base_url/"
+  path="."
 
   # Afficher le contenu du dossier initial
   echo "Contenu du dossier $url :"
