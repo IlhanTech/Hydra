@@ -1,40 +1,27 @@
 #!/bin/bash
 
-url="http://10.10.166.131"
+base_url="http://10.10.166.131"
 wordlist="/usr/share/dirb/wordlists/common.txt"
 
-# Fonction pour explorer les dossiers
-explore_folders() {
-    local current_url="$1"
-    local current_wordlist="$2"
+# Exécuter la commande dirb
+output=$(dirb "$base_url" -w "$wordlist")
 
-    # Exécution de la commande dirb
-    dirb_output=$(dirb "$current_url" "$current_wordlist")
+while true; do
+  # Extraire le dernier dossier trouvé par dirb
+  folder=$(echo "$output" | grep -oP '(?<=\+ )[^ ]+(?=/$)' | tail -1)
 
-    # Analyse de la sortie de dirb pour récupérer les dossiers trouvés
-    folders=$(echo "$dirb_output" | grep -oP '\[\+\] (\/\S+\/)')
+  if [ -n "$folder" ]; then
+    # Afficher le contenu du dossier
+    echo "Contenu du dossier $folder :"
+    cat "$folder"
 
-    # Vérification s'il y a des dossiers trouvés
-    if [ -z "$folders" ]; then
-        echo "Aucun dossier trouvé dans $current_url"
-        return
-    fi
+    # Relancer dirb pour explorer le nouveau dossier
+    output=$(dirb "$base_url/$folder" -w "$wordlist")
+  else
+    # Aucun dossier trouvé, retourner le dernier URL
+    last_url=$(echo "$output" | grep -oP '(?<=\+ )[^ ]+(?=/)' | tail -1)
+    echo "Dernier URL : $last_url"
+    break
+  fi
+done
 
-    # Parcourir les dossiers trouvés
-    for folder in $folders; do
-        # Supprimer les caractères '[+]' du début du dossier
-        folder="${folder#[+]}"
-
-        # Afficher le dossier trouvé
-        echo "Dossier trouvé : $folder"
-
-        # Construire l'URL complète du dossier
-        next_url="$current_url$folder"
-
-        # Appeler récursivement la fonction pour explorer le dossier suivant
-        explore_folders "$next_url" "$current_wordlist"
-    done
-}
-
-# Appeler la fonction d'exploration des dossiers
-explore_folders "$url" "$wordlist"
